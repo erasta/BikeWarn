@@ -6,55 +6,8 @@
     <title>BikeWarn</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" crossorigin="" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" />
     <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js" crossorigin="" integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="></script>
-    <script>
-        function randomColor() {
-            return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
-        }
-        function createMarker(latlng) {
-            return L.marker(latlng, {
-                // icon: L.icon({ 'marker-color': randomColor() })
-            }).bindPopup("Clicked at " + latlng.toString()).addTo(this.map).openPopup();
-            // }).bindPopup('<input type="text" id="message" /><br /><button id="add-button">Add</button>').addTo(this.map).openPopup();
-        }
-        function map_init() {
-            this.map = L.map('map', { attributionControl: true, zoomControl: true, });
-            this.map.setView(new L.LatLng(32.07, 34.78), 15);
-            var tileurl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-            L.tileLayer(tileurl, { id: 'mapbox.light', attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>' }).addTo(this.map);
-
-            this.features = [];
-
-            this.map.on('click', (e) => {
-                firebase.database().ref('pos').push(L.marker(e.latlng, {}).toGeoJSON());
-            });
-
-            firebase.database().ref('pos').on('value', function (snapshot) {
-                this.features.forEach(m => {
-                    this.map.removeLayer(m);
-                });
-
-                this.features.length = 0;
-                for (var k in snapshot.val()) {
-                    var m = L.geoJSON(snapshot.val()[k]).addTo(map);
-                    this.features.push(m);
-                }
-            });
-        }
-        window.onload = map_init;
-    </script>
     <script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
-    <script>
-        // Initialize Firebase
-        var config = {
-            apiKey: "AIzaSyAD1oxPPPZRb64TJcADtRENkWS5ZcrtJ3Y",
-            authDomain: "bikewarn-223907.firebaseapp.com",
-            databaseURL: "https://bikewarn-223907.firebaseio.com",
-            projectId: "bikewarn-223907",
-            storageBucket: "bikewarn-223907.appspot.com",
-            messagingSenderId: "638058417911"
-        };
-        firebase.initializeApp(config);
-    </script>
+    <script src="Bike.js" type="module"></script>
 </head>
 
 <body style="height: 100vh; width: 100%; margin: 0; ">
