@@ -1,8 +1,8 @@
 export class Bike {
 
-    randomColor() {
-        return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
-    }
+    // randomColor() {
+    //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
+    // }
 
     // createMarker(latlng) {
     //     return L.circleMarker(latlng, {
@@ -12,7 +12,10 @@ export class Bike {
     // }
 
     clickMap(e) {
-        this.fire.push({ latlng: e.latlng, num: 1 });
+        var r = this.fire.push({ latlng: e.latlng, num: 1, time: Date.now() });
+        setTimeout(() => {
+            r.remove();
+        }, Bike.removeAfter);
     }
 
     dist(p, q) {
@@ -27,8 +30,8 @@ export class Bike {
             var found = ret.find((q) => this.dist(p, q) < 0.0005);
             if (found) {
                 ++found.num;
-                found.latlng.lat = (found.latlng.lat + p.latlng.lat) / 2.0;
-                found.latlng.lng = (found.latlng.lng + p.latlng.lng) / 2.0;
+                found.latlng.lat = (found.latlng.lat * found.num + p.latlng.lat * p.num) / (found.num + p.num);
+                found.latlng.lng = (found.latlng.lng * found.num + p.latlng.lng * p.num) / (found.num + p.num);
             } else {
                 ret.push(p);
             }
@@ -37,6 +40,8 @@ export class Bike {
     }
 
     fireValues(snapshot) {
+        var now = Date.now();
+
         // Clean
         this.features.forEach(m => {
             this.map.removeLayer(m);
@@ -45,7 +50,14 @@ export class Bike {
         // Flatten
         var positions = [];
         for (var k in snapshot.val()) {
-            positions.push(snapshot.val()[k]);
+            var v = snapshot.val()[k];
+            if (!v.time || v.time < now - Bike.removeAfter || v.time > now) {
+                setTimeout(() => {
+                    firebase.database().ref('pos' + k).remove();
+                }, 1);
+            } else {
+                positions.push(v);
+            }
         }
 
         // Merge
@@ -69,7 +81,7 @@ export class Bike {
 
         this.map.on('locationerror', () => { this.map.setView(new L.LatLng(32.07, 34.78), 15); });
         this.map.on('locationfound', (e) => { L.marker(e.latlng).addTo(this.map); });
-        this.map.locate({ setView: true, maxZoom: 18 });
+        this.map.locate({ setView: true, maxZoom: 20 });
 
         this.features = [];
 
@@ -80,5 +92,7 @@ export class Bike {
     }
 
 }
+
+Bike.removeAfter = 1000 * 60 * 60 * 6; // 6 hours
 
 window.onload = () => { new Bike().init(); };
