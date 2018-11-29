@@ -77,13 +77,13 @@ export class Bike {
         firebase.initializeApp(config);
         this.fire = firebase.database().ref('pos');
 
-        this.map = L.map('map', { attributionControl: true, zoomControl: true, });
+        this.map = L.map('map', { attributionControl: true, zoomControl: false });
         var tileurl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         L.tileLayer(tileurl, { id: 'mapbox.light', attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>' }).addTo(this.map);
 
         this.map.on('locationerror', () => { this.map.setView(new L.LatLng(32.07, 34.78), 15); });
         this.map.on('locationfound', (e) => { L.marker(e.latlng).addTo(this.map); });
-        this.map.locate({ setView: true, maxZoom: 20 });
+        this.map.locate({ setView: true, maxZoom: 25 });
 
         this.features = [];
 
