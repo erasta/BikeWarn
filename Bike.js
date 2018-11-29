@@ -5,7 +5,11 @@ export class Bike {
     // }
 
     clickMap(e) {
-        var popup = L.popup().setLatLng(e.latlng).setContent('<button id="add-button">Confirm?</button>').openOn(this.map);
+        var btn = '<button id="add-button" style="width: 100px; height: 40px; ' +
+        'border-radius: 10px; background-color: lightblue; ' +
+        'box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);' +
+        '"><b>Confirm?</b></button>';
+        var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
         document.getElementById('add-button').addEventListener('click', () => {
             popup.remove();
             var r = this.fire.push({ latlng: e.latlng, num: 1, time: Date.now() });
