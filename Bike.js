@@ -4,18 +4,15 @@ export class Bike {
     //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
     // }
 
-    // createMarker(latlng) {
-    //     return L.circleMarker(latlng, {
-    //         // icon: L.icon({ 'marker-color': randomColor() })
-    //     }).bindPopup("Clicked at " + latlng.toString()).addTo(this.map).openPopup();
-    //     // }).bindPopup('<input type="text" id="message" /><br /><button id="add-button">Add</button>').addTo(this.map).openPopup();
-    // }
-
     clickMap(e) {
-        var r = this.fire.push({ latlng: e.latlng, num: 1, time: Date.now() });
-        setTimeout(() => {
-            r.remove();
-        }, Bike.removeAfter);
+        var popup = L.popup().setLatLng(e.latlng).setContent('<button id="add-button">Confirm?</button>').openOn(this.map);
+        document.getElementById('add-button').addEventListener('click', () => {
+            popup.remove();
+            var r = this.fire.push({ latlng: e.latlng, num: 1, time: Date.now() });
+            setTimeout(() => {
+                r.remove();
+            }, Bike.removeAfter);
+        });
     }
 
     dist(p, q) {
@@ -65,7 +62,7 @@ export class Bike {
 
         // Show and save
         this.features = positions.map((p) => {
-            return L.circleMarker(p.latlng, { weight: p.num }).addTo(this.map);
+            return L.circleMarker(p.latlng, { color: 'red', weight: p.num }).addTo(this.map);
         });
     }
 
