@@ -5,11 +5,7 @@ export class Bike {
     // }
 
     clickMap(e) {
-        var btn = '<button id="add-button" style="' +
-        'border-radius: 10px; background-color: lightblue; font-size: 20px;' +
-        'box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);' +
-        'padding-top: 7px;padding-bottom: 7px;padding-right: 20px;padding-left: 20px;' +
-        '">Confirm?</button>';
+        var btn = '<button id="add-button">Confirm?</button>';
         var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
         document.getElementById('add-button').addEventListener('click', () => {
             popup.remove();
