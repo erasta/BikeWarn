@@ -6,9 +6,10 @@ export class Bike {
     //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
     // }
 
-    clickMarker(e) {
+    clickMarker(e, p) {
         L.DomEvent.stopPropagation(e);
-        var btn = '<center>היה כאן פקח</center><br><button id="add-button">עדיין יש</button>';
+        var tstr = new Date(p.time).toLocaleTimeString();
+        var btn = '<center>היה כאן פקח<br>' + tstr + '</center><br><button id="add-button">עדיין יש</button>';
         var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
         setTimeout(() => {
             document.getElementById('add-button').addEventListener('click', () => {
@@ -60,7 +61,7 @@ export class Bike {
             } else {
                 found.num += p.num;
                 found.latlng = Geom.lerp(found.latlng, p.latlng, p.num / found.num);
-                found.time = Math.min(found.time, p.time);
+                found.time = Math.max(found.time, p.time);
             }
         });
         return ret;
@@ -80,7 +81,9 @@ export class Bike {
 
         // Show and save
         this.features = positions.map((p) => {
-            return L.circleMarker(p.latlng, { color: 'red', weight: p.num }).addTo(this.map).on('click', this.clickMarker, this);
+            return L.circleMarker(p.latlng, { color: 'red', weight: p.num }).addTo(this.map).on('click', (e) => {
+                this.clickMarker(e, p)
+            });
         });
     }
 
