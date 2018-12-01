@@ -1,11 +1,16 @@
+import { Geom } from "./Geom.js";
+
 export class Bike {
 
     // randomColor() {
     //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
     // }
 
+    clickMarker(e) {
+        // L.DomEvent.stopPropagation(e);
+    }
     clickMap(e) {
-        var btn = '<button id="add-button">Confirm?</button>';
+        var btn = '<center>ראיתי פקח</center><br><button id="add-button">אשר</button>';
         var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
         document.getElementById('add-button').addEventListener('click', () => {
             popup.remove();
@@ -16,20 +21,13 @@ export class Bike {
         });
     }
 
-    dist(p, q) {
-        var dlat = p.latlng.lat - q.latlng.lat;
-        var dlng = p.latlng.lng - q.latlng.lng;
-        return Math.sqrt(dlat * dlat + dlng * dlng);
-    }
-
     mergePositions(positions) {
         var ret = [];
         positions.forEach((p) => {
-            var found = ret.find((q) => this.dist(p, q) < 0.0005);
+            var found = ret.find((q) => Geom.dist(p.latlng, q.latlng) < 0.0005);
             if (found) {
                 ++found.num;
-                found.latlng.lat = (found.latlng.lat * found.num + p.latlng.lat * p.num) / (found.num + p.num);
-                found.latlng.lng = (found.latlng.lng * found.num + p.latlng.lng * p.num) / (found.num + p.num);
+                found.latlng = Geom.lerp(found.latlng, p.latlng, p.num / (found.num + p.num));
             } else {
                 ret.push(p);
             }
@@ -63,7 +61,7 @@ export class Bike {
 
         // Show and save
         this.features = positions.map((p) => {
-            return L.circleMarker(p.latlng, { color: 'red', weight: p.num }).addTo(this.map);
+            return L.circleMarker(p.latlng, { color: 'red', weight: p.num }).addTo(this.map).on('click', this.clickMarker, this);
         });
     }
 
@@ -83,9 +81,9 @@ export class Bike {
 
         this.features = [];
 
-        this.map.on('click', this.clickMap.bind(this));
+        this.map.on('click', this.clickMap, this);
 
-        this.fire.on('value', this.fireValues.bind(this));
+        this.fire.on('value', this.fireValues, this);
 
     }
 
