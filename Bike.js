@@ -7,57 +7,76 @@ export class Bike {
     // }
 
     clickMarker(e) {
-        // L.DomEvent.stopPropagation(e);
-    }
-    clickMap(e) {
-        var btn = '<center>ראיתי פקח</center><br><button id="add-button">אשר</button>';
+        L.DomEvent.stopPropagation(e);
+        var btn = '<center>היה כאן פקח</center><br><button id="add-button">עדיין יש</button>';
         var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
-        document.getElementById('add-button').addEventListener('click', () => {
-            popup.remove();
-            var r = this.fire.push({ latlng: e.latlng, num: 1, time: Date.now() });
-            setTimeout(() => {
-                r.remove();
-            }, Bike.removeAfter);
-        });
+        setTimeout(() => {
+            document.getElementById('add-button').addEventListener('click', () => {
+                popup.remove();
+                var r = this.fire.push({ latlng: e.target.getLatLng(), num: 1, time: Date.now() });
+                setTimeout(() => {
+                    r.remove();
+                }, Bike.removeAfter);
+            });
+        }, 1);
     }
 
-    mergePositions(positions) {
+    clickMap(e) {
+        var btn = '<center>ראיתי פקח</center><br><button id="add-button"">אשר</button>';
+        var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
+        setTimeout(() => {
+            document.getElementById('add-button').addEventListener('click', () => {
+                popup.remove();
+                var r = this.fire.push({ latlng: e.latlng, num: 1, time: Date.now() });
+                setTimeout(() => {
+                    r.remove();
+                }, Bike.removeAfter);
+            });
+        }, 1);
+    }
+
+    flattenAndRemoveOld(snapval) {
         var ret = [];
-        positions.forEach((p) => {
+        var now = Date.now();
+        for (var k in snapval) {
+            var v = snapval[k];
+            if (!v.time || v.time < now - Bike.removeAfter || v.time > now) {
+                setTimeout(() => {
+                    firebase.database().ref('pos/' + k).remove();
+                }, 1);
+                continue;
+            }
+            ret.push(Object.assign({ id: k }, v));
+        }
+        return ret;
+    }
+
+    mergePoints(points) {
+        var ret = [];
+        points.forEach((p) => {
             var found = ret.find((q) => Geom.dist(p.latlng, q.latlng) < 0.0005);
-            if (found) {
-                ++found.num;
-                found.latlng = Geom.lerp(found.latlng, p.latlng, p.num / (found.num + p.num));
-            } else {
+            if (!found) {
                 ret.push(p);
+            } else {
+                found.num += p.num;
+                found.latlng = Geom.lerp(found.latlng, p.latlng, p.num / found.num);
+                found.time = Math.min(found.time, p.time);
             }
         });
         return ret;
     }
 
     fireValues(snapshot) {
-        var now = Date.now();
-
         // Clean
         this.features.forEach(m => {
             this.map.removeLayer(m);
         });
 
         // Flatten
-        var positions = [];
-        for (var k in snapshot.val()) {
-            var v = snapshot.val()[k];
-            if (!v.time || v.time < now - Bike.removeAfter || v.time > now) {
-                setTimeout(() => {
-                    firebase.database().ref('pos/' + k).remove();
-                }, 1);
-            } else {
-                positions.push(v);
-            }
-        }
+        var positions = this.flattenAndRemoveOld(snapshot.val());
 
         // Merge
-        var positions = this.mergePositions(positions);
+        var positions = this.mergePoints(positions);
 
         // Show and save
         this.features = positions.map((p) => {
