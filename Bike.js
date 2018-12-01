@@ -2,19 +2,22 @@ import { Geom } from "./Geom.js";
 
 export class Bike {
 
-    // randomColor() {
-    //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
-    // }
-
     clickMarker(e, p) {
         L.DomEvent.stopPropagation(e);
         var tstr = new Date(p.time).toLocaleTimeString();
-        var btn = '<center>היה כאן פקח<br>' + tstr + '</center><br><button id="add-button">עדיין יש</button>';
-        var popup = L.popup().setLatLng(e.latlng).setContent(btn).openOn(this.map);
+        var btn = '<center>היה כאן פקח<br>' + tstr + '</center><br><button id="add-button">עדיין יש</button><button id="no-button">לא רואה</button>';
+        var popup = L.popup().setLatLng(e.target.getLatLng()).setContent(btn).openOn(this.map);
         setTimeout(() => {
             document.getElementById('add-button').addEventListener('click', () => {
                 popup.remove();
                 var r = this.fire.push({ latlng: e.target.getLatLng(), num: 1, time: Date.now() });
+                setTimeout(() => {
+                    r.remove();
+                }, Bike.removeAfter);
+            });
+            document.getElementById('no-button').addEventListener('click', () => {
+                popup.remove();
+                var r = this.fire.push({ latlng: e.target.getLatLng(), num: -0.35, time: Date.now() });
                 setTimeout(() => {
                     r.remove();
                 }, Bike.removeAfter);
@@ -61,7 +64,9 @@ export class Bike {
             } else {
                 found.num += p.num;
                 found.latlng = Geom.lerp(found.latlng, p.latlng, p.num / found.num);
-                found.time = Math.max(found.time, p.time);
+                if (p.num > 0) {
+                    found.time = Math.max(found.time, p.time);
+                }
             }
         });
         return ret;
@@ -78,6 +83,7 @@ export class Bike {
 
         // Merge
         var positions = this.mergePoints(positions);
+        var positions = positions.filter((pos) => pos.num > 0);
 
         // Show and save
         this.features = positions.map((p) => {
@@ -86,6 +92,10 @@ export class Bike {
             });
         });
     }
+
+    // randomColor() {
+    //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
+    // }
 
     init() {
         // Initialize Firebase
