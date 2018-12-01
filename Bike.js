@@ -51,7 +51,7 @@ export class Bike {
             var v = snapshot.val()[k];
             if (!v.time || v.time < now - Bike.removeAfter || v.time > now) {
                 setTimeout(() => {
-                    firebase.database().ref('pos' + k).remove();
+                    firebase.database().ref('pos/' + k).remove();
                 }, 1);
             } else {
                 positions.push(v);
