@@ -46,7 +46,7 @@ export class Bike {
             var v = snapval[k];
             if (!v.time || v.time < now - Bike.removeAfter || v.time > now) {
                 setTimeout(() => {
-                    firebase.database().ref('pos/' + k).remove();
+                    firebase.database().ref(k).remove();
                 }, 1);
                 continue;
             }
@@ -101,7 +101,7 @@ export class Bike {
         // Initialize Firebase
         var config = { apiKey: "AIzaSyAD1oxPPPZRb64TJcADtRENkWS5ZcrtJ3Y", authDomain: "bikewarn-223907.firebaseapp.com", databaseURL: "https://bikewarn-223907.firebaseio.com", projectId: "bikewarn-223907", storageBucket: "bikewarn-223907.appspot.com", messagingSenderId: "638058417911" };
         firebase.initializeApp(config);
-        this.fire = firebase.database().ref('pos');
+        this.fire = firebase.database().ref();
 
         this.map = L.map('map', { attributionControl: true, zoomControl: false });
         var tileurl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
