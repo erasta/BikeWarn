@@ -113,8 +113,12 @@ export class Bike {
             this.map.setView(new L.LatLng(32.07, 34.78), 15);
         });
         this.map.on('locationfound', (e) => {
-            if (this.youarehere) this.youarehere.remove();
-            this.youarehere = L.marker(e.latlng).addTo(this.map);
+            if (!this.youarehere) {
+                var txt = "<center>אתם כאן<br>לחצו על המפה במקום עליו תרצו לדווח<br>או על דיווח קיים בשביל לראות פרטים</center>";
+                this.youarehere = L.marker(e.latlng).addTo(this.map).bindPopup(txt).openPopup();;
+            } else {
+                this.youarehere.setLatLng(e.latlng);
+            }
         });
         this.map.locate({ watch: true, setView: true, maxZoom: 25 });
 
