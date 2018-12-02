@@ -93,9 +93,18 @@ export class Bike {
         });
     }
 
-    // randomColor() {
-    //     return '#' + [(~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16), (~~(Math.random() * 16)).toString(16)].join('');
-    // }
+    showYouAreHere(latlng) {
+        if (!this.youarehere) {
+            var txt = "<center>אתם כאן<br>לחצו על המפה במקום עליו תרצו לדווח<br>או על דיווח קיים בשביל לראות פרטים</center>";
+            var icon = L.BeautifyIcon.icon({
+                icon: 'bicycle', iconShape: 'marker', iconAnchor: [13, 25],
+                borderColor: 'green', textColor: 'green', backgroundColor: 'yellow', borderWidth: 2
+            });
+            this.youarehere = L.marker(latlng, { icon: icon }).addTo(this.map).bindPopup(txt).openPopup();;
+        } else {
+            this.youarehere.setLatLng(latlng);
+        }
+    }
 
     init() {
         // Initialize Firebase
@@ -108,19 +117,12 @@ export class Bike {
         L.tileLayer(tileurl, { id: 'mapbox.light', attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>' }).addTo(this.map);
 
         this.map.on('locationerror', () => {
-            if (this.youarehere) this.youarehere.remove();
-            this.youarehere = undefined;
-            this.map.setView(new L.LatLng(32.07, 34.78), 15);
+            var latlng = new L.LatLng(32.07, 34.78);
+            this.map.setView(latlng, 15);
+            this.showYouAreHere(latlng);
         });
-        this.map.on('locationfound', (e) => {
-            if (!this.youarehere) {
-                var txt = "<center>אתם כאן<br>לחצו על המפה במקום עליו תרצו לדווח<br>או על דיווח קיים בשביל לראות פרטים</center>";
-                this.youarehere = L.marker(e.latlng).addTo(this.map).bindPopup(txt).openPopup();;
-            } else {
-                this.youarehere.setLatLng(e.latlng);
-            }
-        });
-        this.map.locate({ watch: true, setView: true, maxZoom: 25 });
+        this.map.on('locationfound', (e) => { this.showYouAreHere(e.latlng); })
+        this.map.locate({ watch: true, setView: true, maxZoom: 25, timeout: 500 });
 
         this.features = [];
 
