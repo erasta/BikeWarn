@@ -6,7 +6,9 @@ export class Bike {
         L.DomEvent.stopPropagation(e);
         var tstr = new Date(p.time).toLocaleTimeString();
         var btn = '<center>היה כאן פקח<br>' + tstr + '</center><br><button id="add-button">עדיין יש</button><button id="no-button">לא רואה</button>';
-        var popup = L.popup().setLatLng(e.target.getLatLng()).setContent(btn).openOn(this.map);
+        var popup = L.popup().setLatLng(e.target.getLatLng()).setContent(btn).openPopup().openOn(this.map);
+        // e.target.bindPopup(popup).openPopup();
+
         setTimeout(() => {
             document.getElementById('add-button').addEventListener('click', () => {
                 popup.remove();
@@ -87,7 +89,11 @@ export class Bike {
 
         // Show and save
         this.features = positions.map((p) => {
-            return L.circleMarker(p.latlng, { color: 'red', weight: p.num }).addTo(this.map).on('click', (e) => {
+            var icon = L.BeautifyIcon.icon({
+                icon: 'eye', iconShape: 'marker', // iconAnchor: [13, 25],
+                borderColor: 'Crimson', textColor: 'DarkRed', backgroundColor: 'CornflowerBlue', //borderWidth: p.num
+            });
+            return L.marker(p.latlng, { icon }).addTo(this.map).on('click', (e) => {
                 this.clickMarker(e, p)
             });
         });
@@ -97,10 +103,12 @@ export class Bike {
         if (!this.youarehere) {
             var txt = "<center>אתם כאן<br>לחצו על המפה במקום עליו תרצו לדווח<br>או על דיווח קיים בשביל לראות פרטים</center>";
             var icon = L.BeautifyIcon.icon({
-                icon: 'bicycle', iconShape: 'marker', iconAnchor: [13, 25],
+                icon: 'bicycle', iconShape: 'marker', // iconAnchor: [13, 25],
                 borderColor: 'green', textColor: 'green', backgroundColor: 'yellow', borderWidth: 2
             });
-            this.youarehere = L.marker(latlng, { icon: icon }).addTo(this.map).bindPopup(txt).openPopup();;
+            this.youarehere = L.marker(latlng,
+                 { icon: icon }
+                 ).addTo(this.map).bindPopup(txt).openPopup();
         } else {
             this.youarehere.setLatLng(latlng);
         }
@@ -108,7 +116,7 @@ export class Bike {
 
     init() {
         // Initialize Firebase
-        var config = { apiKey: "AIzaSyAD1oxPPPZRb64TJcADtRENkWS5ZcrtJ3Y", authDomain: "bikewarn-223907.firebaseapp.com", databaseURL: "https://bikewarn-223907.firebaseio.com", projectId: "bikewarn-223907", storageBucket: "bikewarn-223907.appspot.com", messagingSenderId: "638058417911" };
+        var config = { apiKey: "AIzaSyCVAm6jto4LrnfJD90IZozZN2gJps_ota8", authDomain: "bikewarn-223907.firebaseapp.com", databaseURL: "https://bikewarn-223907.firebaseio.com", projectId: "bikewarn-223907", storageBucket: "bikewarn-223907.appspot.com", messagingSenderId: "638058417911" };
         firebase.initializeApp(config);
         this.fire = firebase.database().ref();
 
