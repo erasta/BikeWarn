@@ -107,9 +107,16 @@ export class Bike {
         var tileurl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         L.tileLayer(tileurl, { id: 'mapbox.light', attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>' }).addTo(this.map);
 
-        this.map.on('locationerror', () => { this.map.setView(new L.LatLng(32.07, 34.78), 15); });
-        this.map.on('locationfound', (e) => { L.marker(e.latlng).addTo(this.map); });
-        this.map.locate({ setView: true, maxZoom: 25 });
+        this.map.on('locationerror', () => {
+            if (this.youarehere) this.youarehere.remove();
+            this.youarehere = undefined;
+            this.map.setView(new L.LatLng(32.07, 34.78), 15);
+        });
+        this.map.on('locationfound', (e) => {
+            if (this.youarehere) this.youarehere.remove();
+            this.youarehere = L.marker(e.latlng).addTo(this.map);
+        });
+        this.map.locate({ watch: true, setView: true, maxZoom: 25 });
 
         this.features = [];
 
