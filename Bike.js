@@ -2,29 +2,38 @@ import { Geom } from "./Geom.js";
 
 export class Bike {
 
-    clickMarker(e, p) {
-        L.DomEvent.stopPropagation(e);
+    createMarker(p) {
+        var icon = L.BeautifyIcon.icon({
+            icon: 'eye', iconShape: 'marker', // iconAnchor: [13, 25],
+            borderColor: 'Crimson', textColor: 'DarkRed', backgroundColor: 'CornflowerBlue', //borderWidth: p.num
+        });
+        var marker = L.marker(p.latlng, { icon }).addTo(this.map);
         var tstr = new Date(p.time).toLocaleTimeString();
-        var btn = '<center>היה כאן פקח<br>' + tstr + '</center><br><button id="add-button">עדיין יש</button><button id="no-button">לא רואה</button>';
-        var popup = L.popup().setLatLng(e.target.getLatLng()).setContent(btn).openPopup().openOn(this.map);
-        // e.target.bindPopup(popup).openPopup();
+        var popup = document.createElement('div');
+        var popstr = popup.appendChild(document.createElement('center'));
+        popstr.innerHTML = 'היה כאן פקח<br>' + tstr;
 
-        setTimeout(() => {
-            document.getElementById('add-button').addEventListener('click', () => {
-                popup.remove();
-                var r = this.fire.push({ latlng: e.target.getLatLng(), num: 1, time: Date.now() });
-                setTimeout(() => {
-                    r.remove();
-                }, Bike.removeAfter);
-            });
-            document.getElementById('no-button').addEventListener('click', () => {
-                popup.remove();
-                var r = this.fire.push({ latlng: e.target.getLatLng(), num: -0.35, time: Date.now() });
-                setTimeout(() => {
-                    r.remove();
-                }, Bike.removeAfter);
-            });
-        }, 1);
+        var btnadd = popup.appendChild(document.createElement('button'));
+        btnadd.textContent = 'עדיין יש';
+        btnadd.addEventListener('click', () => {
+            marker.closePopup();
+            var r = this.fire.push({ latlng: p.latlng, num: 1, time: Date.now() });
+            setTimeout(() => {
+                r.remove();
+            }, Bike.removeAfter);
+        });
+
+        var btnadd = popup.appendChild(document.createElement('button'));
+        btnadd.textContent = 'לא רואה';
+        btnadd.addEventListener('click', () => {
+            marker.closePopup();
+            var r = this.fire.push({ latlng: p.latlng, num: -0.35, time: Date.now() });
+            setTimeout(() => {
+                r.remove();
+            }, Bike.removeAfter);
+        });
+
+        return marker.bindPopup(popup);
     }
 
     clickMap(e) {
@@ -75,6 +84,8 @@ export class Bike {
     }
 
     fireValues(snapshot) {
+        console.log('snapshot ', snapshot.val());
+
         // Clean
         this.features.forEach(m => {
             this.map.removeLayer(m);
@@ -88,15 +99,7 @@ export class Bike {
         var positions = positions.filter((pos) => pos.num > 0);
 
         // Show and save
-        this.features = positions.map((p) => {
-            var icon = L.BeautifyIcon.icon({
-                icon: 'eye', iconShape: 'marker', // iconAnchor: [13, 25],
-                borderColor: 'Crimson', textColor: 'DarkRed', backgroundColor: 'CornflowerBlue', //borderWidth: p.num
-            });
-            return L.marker(p.latlng, { icon }).addTo(this.map).on('click', (e) => {
-                this.clickMarker(e, p)
-            });
-        });
+        this.features = positions.map(this.createMarker.bind(this));
     }
 
     showYouAreHere(latlng) {
@@ -106,9 +109,7 @@ export class Bike {
                 icon: 'bicycle', iconShape: 'marker', // iconAnchor: [13, 25],
                 borderColor: 'green', textColor: 'green', backgroundColor: 'yellow', borderWidth: 2
             });
-            this.youarehere = L.marker(latlng,
-                 { icon: icon }
-                 ).addTo(this.map).bindPopup(txt).openPopup();
+            this.youarehere = L.marker(latlng, { icon: icon }).addTo(this.map).bindPopup(txt).openPopup();
         } else {
             this.youarehere.setLatLng(latlng);
         }
@@ -137,7 +138,6 @@ export class Bike {
         this.map.on('click', this.clickMap, this);
 
         this.fire.on('value', this.fireValues, this);
-
     }
 
 }
