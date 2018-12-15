@@ -2,6 +2,20 @@ import { Geom } from "./Geom.js";
 
 export class Bike {
 
+    createButton(text, click) {
+        var btn = document.createElement('button');
+        btn.textContent = text;
+        btn.addEventListener('click', click);
+        return btn;
+    }
+
+    fireWithTimeout(obj, timeout) {
+        var r = this.fire.push(obj);
+        setTimeout(() => {
+            r.remove();
+        }, timeout);
+    }
+
     createMarker(p) {
         var icon = L.BeautifyIcon.icon({
             icon: 'eye', iconShape: 'marker', // iconAnchor: [13, 25],
@@ -13,25 +27,15 @@ export class Bike {
         var popstr = popup.appendChild(document.createElement('center'));
         popstr.innerHTML = 'היה כאן פקח<br>' + tstr;
 
-        var btnadd = popup.appendChild(document.createElement('button'));
-        btnadd.textContent = 'עדיין יש';
-        btnadd.addEventListener('click', () => {
+        popup.appendChild(this.createButton('עדיין יש', () => {
             marker.closePopup();
-            var r = this.fire.push({ latlng: p.latlng, num: 1, time: Date.now() });
-            setTimeout(() => {
-                r.remove();
-            }, Bike.removeAfter);
-        });
+            this.fireWithTimeout({ latlng: p.latlng, num: 1, time: Date.now() }, Bike.removeAfter);
+        }));
 
-        var btnadd = popup.appendChild(document.createElement('button'));
-        btnadd.textContent = 'לא רואה';
-        btnadd.addEventListener('click', () => {
+        popup.appendChild(this.createButton('לא רואה', () => {
             marker.closePopup();
-            var r = this.fire.push({ latlng: p.latlng, num: -0.35, time: Date.now() });
-            setTimeout(() => {
-                r.remove();
-            }, Bike.removeAfter);
-        });
+            this.fireWithTimeout({ latlng: p.latlng, num: -0.35, time: Date.now() }, Bike.removeAfter);
+        }));
 
         return marker.bindPopup(popup);
     }
